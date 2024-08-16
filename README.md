@@ -1,6 +1,6 @@
 Advanced UI Implementation: Notification Panel with Modal Pop-up
 Project Overview
-This project is an advanced UI implementation that features a responsive notification panel with a modal pop-up, along with a collapsible sidebar and dynamic interactivity. The layout is designed to be fully responsive across various screen sizes and includes functionalities like notification management, marking notifications as read/unread, and a dynamic counter for unread notifications.
+This project is an advanced UI implementation featuring a responsive notification panel with a modal pop-up, along with a collapsible sidebar and dynamic interactivity. The layout is designed to be fully responsive across various screen sizes, including functionalities like notification management, marking notifications as read/unread, and a dynamic counter for unread notifications.
 
 Features
 Header with Notification Icon:
@@ -9,32 +9,34 @@ Displays a notification bell icon with a dynamic counter showing the number of u
 The counter updates based on the notifications stored in local storage.
 Notification Panel:
 
-A side panel that slides out when the notification icon is clicked, listing all notifications in descending order.
-Notifications are visually distinct if unread (e.g., bold font or different background color).
+A side panel slides out when the notification icon is clicked, listing all notifications in descending order.
+Unread notifications have a grey background.
+Read notifications have a white background and include a "mark as unread" text.
 The panel includes a close button to hide the panel.
+
 Modal Pop-up:
 
-Clicking on a notification opens a modal window with the full content of the notification.
-Notifications are marked as read when opened, and the color updates accordingly in the notification panel.
+Clicking on a notification opens a modal window displaying the full content of the notification.
+Notifications are marked as read when opened, with corresponding color updates in the notification panel.
 Notification Management:
 
 Functionality to mark notifications as read/unread.
-Notifications can be deleted (bonus feature) directly from the panel.
+
 Sidebar:
 
 A collapsible sidebar with menu items like Dashboard, Reports, Settings, and Logout.
-The sidebar collapses into a hamburger menu on smaller screens.
+ 
 Responsiveness:
 
 The design automatically adapts to different screen sizes (desktop, tablet, mobile).
 The sidebar can be manually toggled on larger screens.
 Project Structure
-All the HTML, CSS, and JavaScript code is contained within a single index.html file for simplicity. The project uses embedded CSS within the <head> section and JavaScript within <script> tags at the bottom of the file.
+All HTML, CSS, and JavaScript code is contained within a single index.html file for simplicity. The project uses embedded CSS within the <head> section and JavaScript within <script> tags at the bottom of the file.
 
 Technologies Used
 HTML5: For the structure of the webpage.
 CSS3: For styling and layout.
-JavaScript (or jQuery): For dynamic interactivity and DOM manipulation.
+JavaScript: For dynamic interactivity and DOM manipulation.
 Bootstrap 4/5: For responsive grid structure and basic styling.
 Font Awesome: For icons used in the sidebar and notifications.
 Setup Instructions
@@ -42,8 +44,8 @@ Clone the Repository:
 
 bash
 Copy code
-git clone [repository-url]
-cd [repository-directory]
+git clone https://github.com/sethuvicky/growth99
+cd growth99
 Open the Project:
 
 Open the index.html file in your preferred web browser.
