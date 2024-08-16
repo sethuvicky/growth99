@@ -43,9 +43,10 @@ Setup Instructions
 Clone the Repository:
 
 bash
-Copy code
-git clone https://github.com/sethuvicky/growth99
+Copy code git clone https://github.com/sethuvicky/growth99
+
 cd growth99
+
 Open the Project:
 
 Open the index.html file in your preferred web browser.
