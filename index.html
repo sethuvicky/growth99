@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notification Panel</title>
+     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
+    <style>
+        .content.collapsed {
+            margin-left: 80px;
+        }
+
+        /* Header */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        /* Notification Counter */
+/* Notification Counter */
+.notification-counter {
+    position: absolute;
+    top: -5px; /* Adjust this value for fine-tuning */
+    right: -14px; /* Adjust this value for fine-tuning */
+    background-color: red;
+    color: white;
+    border-radius: 50%;
+    padding: 1px 6px;
+    font-size: 0.8em;
+    z-index: 1;
+}
+    .logo{
+        width: 100px;
+    }
+
+        /* Notification Panel */
+        #notification-panel {
+            position: fixed;
+            right: -300px;
+            top: 0;
+            height: 100%;
+            width: 300px;
+            background-color: white;
+            border-left: 1px solid #dee2e6;
+            transition: right 0.3s;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+     
+        #notification-panel.open {
+            right: 0;
+        }
+
+        #notification-panel .notification-item {
+            padding: 10px;
+            border-bottom: 1px solid #dee2e6;
+            cursor: pointer;
+        }
+
+        #notification-panel .notification-item.unread {
+            background-color: #e9ecef;
+            font-weight: bold;
+        }
+
+        #notification-panel .notification-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        #notification-panel .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 1.2em;
+            color: #343a40;
+            cursor: pointer;
+        }
+
+        /* Mark as Unread Button */
+        .notification-item .mark-unread-btn {
+            display: none;
+            margin-top: 5px;
+        }
+
+        .notification-item:not(.unread) .mark-unread-btn {
+            display: inline-block;
+        }
+
+        /* Modal */
+        .modal-body p {
+            white-space: pre-line;
+        }
+  
+        ::after,
+        ::before {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        a {
+            text-decoration: none;
+        }
+
+        li {
+            list-style: none;
+        }
+
+        h1 {
+            font-weight: 600;
+            font-size: 1.5rem;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.8rem;
+        }
+
+        .wrapper {
+            display: flex;
+        }
+
+        .content {
+            padding-top: 2%;
+            padding-right: 5%;
+
+            min-height: 100vh;
+            width: 95%;
+            overflow: hidden;
+            transition: all 0.35s ease-in-out;
+        }
+
+        #sidebar {
+            width: 70px;
+            min-width: 70px;
+            z-index: 1000;
+            transition: all .25s ease-in-out;
+            background-color: #F8FAFE;
+            display: flex;
+            flex-direction: column;
+        }
+        .breadText{
+            margin-left: 3%;
+        }
+        #sidebar.expand {
+            width: 260px;
+            min-width: 260px;
+        }
+
+        .toggle-btn {
+            background-color: transparent;
+            cursor: pointer;
+            border: 0;
+            padding: 1rem 1.5rem;
+        }
+
+        .toggle-btn i {
+            font-size: 1.5rem;
+            color: #FFF;
+        }
+
+        .sidebar-logo {
+            margin: auto 0;
+        }
+
+        .sidebar-logo a {
+            color: black;
+            font-size: 1.15rem;
+            font-weight: 600;
+        }
+
+        #sidebar:not(.expand) .sidebar-logo,
+        #sidebar:not(.expand) a.sidebar-link span {
+            display: none;
+        }
+
+        .sidebar-nav {
+            padding: 2rem 0;
+            flex: 1 1 auto;
+        }
+
+        a.sidebar-link {
+            padding: .625rem 1.625rem;
+            color:black;
+            display: block;
+            font-size: 0.9rem;
+            white-space: nowrap;
+            border-left: 3px solid transparent;
+        }
+
+        .sidebar-link i {
+            font-size: 1.1rem;
+            margin-right: .75rem;
+        }
+
+        a.sidebar-link:hover {
+            background-color: rgba(255, 255, 255, .075);
+            border-left: 3px solid #3b7ddd;
+        }
+
+        .sidebar-item {
+            position: relative;
+        }
+
+        #sidebar:not(.expand) .sidebar-item .sidebar-dropdown {
+            position: absolute;
+            top: 0;
+            left: 70px;
+            background-color: #F8FAFE;
+            padding: 0;
+            min-width: 15rem;
+            display: none;
+        }
+
+        #sidebar:not(.expand) .sidebar-item:hover .has-dropdown+.sidebar-dropdown {
+            display: block;
+            max-height: 15em;
+            width: 100%;
+            opacity: 1;
+        }
+
+        #sidebar.expand .sidebar-link[data-bs-toggle="collapse"]::after {
+            border: solid;
+            border-width: 0 .075rem .075rem 0;
+            content: "";
+            display: inline-block;
+            padding: 2px;
+            position: absolute;
+            right: 1.5rem;
+            top: 1.4rem;
+            transform: rotate(-135deg);
+            transition: all .2s ease-out;
+        }
+
+        #sidebar.expand .sidebar-link[data-bs-toggle="collapse"].collapsed::after {
+            transform: rotate(45deg);
+            transition: all .2s ease-out;
+        }
+        @media screen and (max-width: 800px) {
+      
+            .icons-box{
+                display: none;
+            }
+
+            .content {
+                 padding: 1%;
+                 padding-right: 5%;
+
+            }
+            body{
+                font-size: 0.7rem;
+            }
+            .logo{
+        width: 50px;
+    }
+
+    #sidebar.expand {
+            width: 100%;
+            min-width:  100%;
+        }
+
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wrapper">
+        <aside id="sidebar">
+            <div class="d-flex">
+                <button class="toggle-btn" type="button">
+                    <svg width="32" height="52" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <g opacity="0.559">
+                        <path d="M14.851 25.725L37.128 38.587V12.863L14.851 25.725ZM-0.00100708 25.725L44.554 0.000972748V51.449L-0.00100708 25.725Z" fill="#2656C9"/>
+                        </g>
+                        <path d="M25.723 18.257L12.861 40.534H38.585L25.723 18.257ZM25.723 3.40503L51.447 47.96H-0.00100708L25.723 3.40503Z" fill="#2656C9"/>
+                        </svg>
+                                        </button>
+                <div class="sidebar-logo">
+                    <a href="#">ClientLogo</a>
+                </div>
+            </div>
+            <ul class="sidebar-nav">
+                <li class="sidebar-item">
+                    <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
+                        data-bs-target="#multi" aria-expanded="false" aria-controls="multi">
+                        <i class="fa-solid fa-table-columns"></i> <span style="font-weight: bold;">Dashboard</span>
+                    </a>
+                    <ul id="multi" class="sidebar-dropdown list-unstyled collapse">
+                        <a href="#" class="sidebar-link collapsed" data-bs-toggle="collapse"
+                        data-bs-target="#multi-two" aria-expanded="false" aria-controls="multi-two">
+                        <svg width="16" height="15" viewBox="0 0 16 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M2 5.81097H4.8C5.06522 5.81097 5.31957 5.91633 5.50711 6.10387C5.69464 6.2914 5.8 6.54576 5.8 6.81097V13.819H1V6.81097C1 6.54576 1.10536 6.2914 1.29289 6.10387C1.48043 5.91633 1.73478 5.81097 2 5.81097Z" stroke="#333333"/>
+                            <path d="M11.609 8.854H14.409C14.6742 8.854 14.9286 8.95936 15.1161 9.1469C15.3036 9.33443 15.409 9.58879 15.409 9.854V13.819H10.609V9.854C10.609 9.58879 10.7144 9.33443 10.9019 9.1469C11.0894 8.95936 11.3438 8.854 11.609 8.854Z" stroke="#333333"/>
+                            <path d="M6.804 1H9.604C9.86922 1 10.1236 1.10536 10.3111 1.29289C10.4986 1.48043 10.604 1.73478 10.604 2V13.819H5.804V2C5.804 1.73478 5.90936 1.48043 6.09689 1.29289C6.28443 1.10536 6.53878 1 6.804 1Z" stroke="#333333"/>
+                            </svg>
+                              Leads
+                    </a>
+                    <a href="#" class="sidebar-link collapsed" data-bs-toggle="collapse"
+                    data-bs-target="#multi-two" aria-expanded="false" aria-controls="multi-two">
+                    <svg width="19" height="12" viewBox="0 0 19 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M18.08 5.85403L16.244 6.76803L13.866 2.22003L15.724 1.29103C15.8621 1.22057 16.0225 1.20763 16.1702 1.25503C16.3178 1.30243 16.4407 1.40633 16.512 1.54403L18.34 5.04403C18.377 5.1141 18.3996 5.19086 18.4066 5.2698C18.4135 5.34874 18.4046 5.42827 18.3804 5.50372C18.3562 5.57917 18.3171 5.64902 18.2655 5.70918C18.214 5.76934 18.1509 5.81859 18.08 5.85403Z" stroke="#333333" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M3.164 6.69402L1.328 5.77202C1.25767 5.73736 1.19499 5.68897 1.14366 5.62969C1.09233 5.57042 1.05341 5.50146 1.02917 5.42689C1.00494 5.35232 0.995885 5.27365 1.00255 5.19552C1.00922 5.1174 1.03148 5.0414 1.068 4.97202L2.896 1.47202C2.96856 1.33551 3.09101 1.23228 3.23781 1.18384C3.38462 1.1354 3.54446 1.1455 3.684 1.21202L5.542 2.14102L3.164 6.69402Z" stroke="#333333" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M16.244 6.76802L15.055 8.16803L12.32 10.903C12.2454 10.9727 12.1551 11.0233 12.0567 11.0505C11.9583 11.0777 11.8548 11.0806 11.755 11.059L7.444 9.98102C7.36519 9.95913 7.29168 9.92136 7.228 9.87003L3.164 6.69403" stroke="#333333" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M15.055 8.16503L11.785 5.78703L10.834 6.50003C10.4218 6.80762 9.9213 6.97379 9.40701 6.97379C8.89271 6.97379 8.39219 6.80762 7.98001 6.50003L7.58001 6.20003C7.51175 6.14864 7.45524 6.08327 7.41428 6.00828C7.37333 5.93329 7.34887 5.85042 7.34252 5.76521C7.33618 5.68001 7.3481 5.59443 7.3775 5.51421C7.40691 5.43398 7.45311 5.36096 7.51301 5.30003L10.426 2.39403C10.5352 2.28369 10.6837 2.22113 10.839 2.22003H13.864" stroke="#333333" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M5.58701 2.138L9.40001 1.023C9.53563 0.984655 9.68043 0.995274 9.80901 1.053L12.38 2.22" stroke="#333333" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                            Marketing
+                </a>
+                <a href="#" class="sidebar-link collapsed" data-bs-toggle="collapse"
+                data-bs-target="#multi-two" aria-expanded="false" aria-controls="multi-two">
+                <svg width="19" height="14" viewBox="0 0 19 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M11.598 5.60901L11.865 7.164L9.86497 6.11102L7.86497 7.164L8.24803 4.93402L6.62804 3.35498L8.86705 3.03003L9.86705 1.00104L10.667 2.61798" stroke="#333333" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M15.173 1L16.173 3.02899L18.4119 3.354L16.7919 4.93298L17.175 7.16302L15.175 6.10999L13.175 7.16302L13.5581 4.93298L11.9379 3.354L14.177 3.02899L15.173 1Z" stroke="#333333" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M13.968 8.57001L15.724 8.82501L14.104 10.404L14.487 12.634L12.487 11.581L10.487 12.634L10.869 10.404L9.24904 8.82501L10.943 8.57904" stroke="#333333" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M8.48299 10.405L8.86507 12.635L6.86507 11.582L4.86507 12.635L5.248 10.405L3.62801 8.82599L5.32198 8.58002" stroke="#333333" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M5.86101 4.93402L6.24406 7.164L4.24406 6.11102L2.24406 7.164L2.62602 4.93402L1.00603 3.35498L3.24504 3.03003L4.24504 1.00104L5.01799 2.56702" stroke="#333333" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                     5 Star review
+            </a>   <a href="#" class="sidebar-link collapsed" data-bs-toggle="collapse"
+            data-bs-target="#multi-two" aria-expanded="false" aria-controls="multi-two">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M3.90302 3.90506C7.77502 0.0320551 10.357 0.0320551 14.23 3.90506C18.103 7.77805 18.102 10.359 14.23 14.232C10.358 18.105 7.77502 18.105 3.90302 14.232C0.031019 10.359 0.0350189 7.77606 3.90302 3.90506Z" stroke="#333333" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M13.077 8.75299H7.58603V12.971" stroke="#333333" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M12.181 7.29401L13.6231 8.73602L12.147 10.212" stroke="#333333" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                
+                 Triggers
+        </a>
+                    </ul>
+                </li>
+                <li class="sidebar-item">
+                    <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
+                        data-bs-target="#multi2" aria-expanded="false" aria-controls="multi">
+                        <i class="fa-solid fa-chart-column"></i> <span style="font-weight: bold;">Reports</span>
+                    </a>
+                    <ul id="multi2" class="sidebar-dropdown list-unstyled collapse">
+                        <a href="#" class="sidebar-link collapsed" data-bs-toggle="collapse"
+                        data-bs-target="#multi-two" aria-expanded="false" aria-controls="multi-two">
+                        <svg width="16" height="15" viewBox="0 0 16 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M2 5.81097H4.8C5.06522 5.81097 5.31957 5.91633 5.50711 6.10387C5.69464 6.2914 5.8 6.54576 5.8 6.81097V13.819H1V6.81097C1 6.54576 1.10536 6.2914 1.29289 6.10387C1.48043 5.91633 1.73478 5.81097 2 5.81097Z" stroke="#333333"/>
+                            <path d="M11.609 8.854H14.409C14.6742 8.854 14.9286 8.95936 15.1161 9.1469C15.3036 9.33443 15.409 9.58879 15.409 9.854V13.819H10.609V9.854C10.609 9.58879 10.7144 9.33443 10.9019 9.1469C11.0894 8.95936 11.3438 8.854 11.609 8.854Z" stroke="#333333"/>
+                            <path d="M6.804 1H9.604C9.86922 1 10.1236 1.10536 10.3111 1.29289C10.4986 1.48043 10.604 1.73478 10.604 2V13.819H5.804V2C5.804 1.73478 5.90936 1.48043 6.09689 1.29289C6.28443 1.10536 6.53878 1 6.804 1Z" stroke="#333333"/>
+                            </svg>
+                              Leads
+                    </a>
+                    <a href="#" class="sidebar-link collapsed" data-bs-toggle="collapse"
+                    data-bs-target="#multi-two" aria-expanded="false" aria-controls="multi-two">
+                    <svg width="19" height="12" viewBox="0 0 19 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M18.08 5.85403L16.244 6.76803L13.866 2.22003L15.724 1.29103C15.8621 1.22057 16.0225 1.20763 16.1702 1.25503C16.3178 1.30243 16.4407 1.40633 16.512 1.54403L18.34 5.04403C18.377 5.1141 18.3996 5.19086 18.4066 5.2698C18.4135 5.34874 18.4046 5.42827 18.3804 5.50372C18.3562 5.57917 18.3171 5.64902 18.2655 5.70918C18.214 5.76934 18.1509 5.81859 18.08 5.85403Z" stroke="#333333" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M3.164 6.69402L1.328 5.77202C1.25767 5.73736 1.19499 5.68897 1.14366 5.62969C1.09233 5.57042 1.05341 5.50146 1.02917 5.42689C1.00494 5.35232 0.995885 5.27365 1.00255 5.19552C1.00922 5.1174 1.03148 5.0414 1.068 4.97202L2.896 1.47202C2.96856 1.33551 3.09101 1.23228 3.23781 1.18384C3.38462 1.1354 3.54446 1.1455 3.684 1.21202L5.542 2.14102L3.164 6.69402Z" stroke="#333333" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M16.244 6.76802L15.055 8.16803L12.32 10.903C12.2454 10.9727 12.1551 11.0233 12.0567 11.0505C11.9583 11.0777 11.8548 11.0806 11.755 11.059L7.444 9.98102C7.36519 9.95913 7.29168 9.92136 7.228 9.87003L3.164 6.69403" stroke="#333333" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M15.055 8.16503L11.785 5.78703L10.834 6.50003C10.4218 6.80762 9.9213 6.97379 9.40701 6.97379C8.89271 6.97379 8.39219 6.80762 7.98001 6.50003L7.58001 6.20003C7.51175 6.14864 7.45524 6.08327 7.41428 6.00828C7.37333 5.93329 7.34887 5.85042 7.34252 5.76521C7.33618 5.68001 7.3481 5.59443 7.3775 5.51421C7.40691 5.43398 7.45311 5.36096 7.51301 5.30003L10.426 2.39403C10.5352 2.28369 10.6837 2.22113 10.839 2.22003H13.864" stroke="#333333" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M5.58701 2.138L9.40001 1.023C9.53563 0.984655 9.68043 0.995274 9.80901 1.053L12.38 2.22" stroke="#333333" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                            Marketing
+                </a>
+                <a href="#" class="sidebar-link collapsed" data-bs-toggle="collapse"
+                data-bs-target="#multi-two" aria-expanded="false" aria-controls="multi-two">
+                <svg width="19" height="14" viewBox="0 0 19 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M11.598 5.60901L11.865 7.164L9.86497 6.11102L7.86497 7.164L8.24803 4.93402L6.62804 3.35498L8.86705 3.03003L9.86705 1.00104L10.667 2.61798" stroke="#333333" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M15.173 1L16.173 3.02899L18.4119 3.354L16.7919 4.93298L17.175 7.16302L15.175 6.10999L13.175 7.16302L13.5581 4.93298L11.9379 3.354L14.177 3.02899L15.173 1Z" stroke="#333333" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M13.968 8.57001L15.724 8.82501L14.104 10.404L14.487 12.634L12.487 11.581L10.487 12.634L10.869 10.404L9.24904 8.82501L10.943 8.57904" stroke="#333333" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M8.48299 10.405L8.86507 12.635L6.86507 11.582L4.86507 12.635L5.248 10.405L3.62801 8.82599L5.32198 8.58002" stroke="#333333" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M5.86101 4.93402L6.24406 7.164L4.24406 6.11102L2.24406 7.164L2.62602 4.93402L1.00603 3.35498L3.24504 3.03003L4.24504 1.00104L5.01799 2.56702" stroke="#333333" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                     5 Star review
+            </a>   <a href="#" class="sidebar-link collapsed" data-bs-toggle="collapse"
+            data-bs-target="#multi-two" aria-expanded="false" aria-controls="multi-two">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M3.90302 3.90506C7.77502 0.0320551 10.357 0.0320551 14.23 3.90506C18.103 7.77805 18.102 10.359 14.23 14.232C10.358 18.105 7.77502 18.105 3.90302 14.232C0.031019 10.359 0.0350189 7.77606 3.90302 3.90506Z" stroke="#333333" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M13.077 8.75299H7.58603V12.971" stroke="#333333" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M12.181 7.29401L13.6231 8.73602L12.147 10.212" stroke="#333333" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                
+                 Triggers
+        </a>
+                    </ul>
+                </li>
+                <li class="sidebar-item">
+                    <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
+                        data-bs-target="#multi3" aria-expanded="false" aria-controls="multi">
+                        <i class="fa-solid fa-gear"></i> <span style="font-weight: bold;">Settings</span>
+                    </a>
+                    <ul id="multi3" class="sidebar-dropdown list-unstyled collapse">
+                        <a href="#" class="sidebar-link collapsed" data-bs-toggle="collapse"
+                        data-bs-target="#multi-two" aria-expanded="false" aria-controls="multi-two">
+                        <svg width="16" height="15" viewBox="0 0 16 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M2 5.81097H4.8C5.06522 5.81097 5.31957 5.91633 5.50711 6.10387C5.69464 6.2914 5.8 6.54576 5.8 6.81097V13.819H1V6.81097C1 6.54576 1.10536 6.2914 1.29289 6.10387C1.48043 5.91633 1.73478 5.81097 2 5.81097Z" stroke="#333333"/>
+                            <path d="M11.609 8.854H14.409C14.6742 8.854 14.9286 8.95936 15.1161 9.1469C15.3036 9.33443 15.409 9.58879 15.409 9.854V13.819H10.609V9.854C10.609 9.58879 10.7144 9.33443 10.9019 9.1469C11.0894 8.95936 11.3438 8.854 11.609 8.854Z" stroke="#333333"/>
+                            <path d="M6.804 1H9.604C9.86922 1 10.1236 1.10536 10.3111 1.29289C10.4986 1.48043 10.604 1.73478 10.604 2V13.819H5.804V2C5.804 1.73478 5.90936 1.48043 6.09689 1.29289C6.28443 1.10536 6.53878 1 6.804 1Z" stroke="#333333"/>
+                            </svg>
+                              Leads
+                    </a>
+                    <a href="#" class="sidebar-link collapsed" data-bs-toggle="collapse"
+                    data-bs-target="#multi-two" aria-expanded="false" aria-controls="multi-two">
+                    <svg width="19" height="12" viewBox="0 0 19 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M18.08 5.85403L16.244 6.76803L13.866 2.22003L15.724 1.29103C15.8621 1.22057 16.0225 1.20763 16.1702 1.25503C16.3178 1.30243 16.4407 1.40633 16.512 1.54403L18.34 5.04403C18.377 5.1141 18.3996 5.19086 18.4066 5.2698C18.4135 5.34874 18.4046 5.42827 18.3804 5.50372C18.3562 5.57917 18.3171 5.64902 18.2655 5.70918C18.214 5.76934 18.1509 5.81859 18.08 5.85403Z" stroke="#333333" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M3.164 6.69402L1.328 5.77202C1.25767 5.73736 1.19499 5.68897 1.14366 5.62969C1.09233 5.57042 1.05341 5.50146 1.02917 5.42689C1.00494 5.35232 0.995885 5.27365 1.00255 5.19552C1.00922 5.1174 1.03148 5.0414 1.068 4.97202L2.896 1.47202C2.96856 1.33551 3.09101 1.23228 3.23781 1.18384C3.38462 1.1354 3.54446 1.1455 3.684 1.21202L5.542 2.14102L3.164 6.69402Z" stroke="#333333" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M16.244 6.76802L15.055 8.16803L12.32 10.903C12.2454 10.9727 12.1551 11.0233 12.0567 11.0505C11.9583 11.0777 11.8548 11.0806 11.755 11.059L7.444 9.98102C7.36519 9.95913 7.29168 9.92136 7.228 9.87003L3.164 6.69403" stroke="#333333" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M15.055 8.16503L11.785 5.78703L10.834 6.50003C10.4218 6.80762 9.9213 6.97379 9.40701 6.97379C8.89271 6.97379 8.39219 6.80762 7.98001 6.50003L7.58001 6.20003C7.51175 6.14864 7.45524 6.08327 7.41428 6.00828C7.37333 5.93329 7.34887 5.85042 7.34252 5.76521C7.33618 5.68001 7.3481 5.59443 7.3775 5.51421C7.40691 5.43398 7.45311 5.36096 7.51301 5.30003L10.426 2.39403C10.5352 2.28369 10.6837 2.22113 10.839 2.22003H13.864" stroke="#333333" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M5.58701 2.138L9.40001 1.023C9.53563 0.984655 9.68043 0.995274 9.80901 1.053L12.38 2.22" stroke="#333333" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                            Marketing
+                </a>
+                <a href="#" class="sidebar-link collapsed" data-bs-toggle="collapse"
+                data-bs-target="#multi-two" aria-expanded="false" aria-controls="multi-two">
+                <svg width="19" height="14" viewBox="0 0 19 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M11.598 5.60901L11.865 7.164L9.86497 6.11102L7.86497 7.164L8.24803 4.93402L6.62804 3.35498L8.86705 3.03003L9.86705 1.00104L10.667 2.61798" stroke="#333333" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M15.173 1L16.173 3.02899L18.4119 3.354L16.7919 4.93298L17.175 7.16302L15.175 6.10999L13.175 7.16302L13.5581 4.93298L11.9379 3.354L14.177 3.02899L15.173 1Z" stroke="#333333" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M13.968 8.57001L15.724 8.82501L14.104 10.404L14.487 12.634L12.487 11.581L10.487 12.634L10.869 10.404L9.24904 8.82501L10.943 8.57904" stroke="#333333" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M8.48299 10.405L8.86507 12.635L6.86507 11.582L4.86507 12.635L5.248 10.405L3.62801 8.82599L5.32198 8.58002" stroke="#333333" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M5.86101 4.93402L6.24406 7.164L4.24406 6.11102L2.24406 7.164L2.62602 4.93402L1.00603 3.35498L3.24504 3.03003L4.24504 1.00104L5.01799 2.56702" stroke="#333333" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                     5 Star review
+            </a>   <a href="#" class="sidebar-link collapsed" data-bs-toggle="collapse"
+            data-bs-target="#multi-two" aria-expanded="false" aria-controls="multi-two">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M3.90302 3.90506C7.77502 0.0320551 10.357 0.0320551 14.23 3.90506C18.103 7.77805 18.102 10.359 14.23 14.232C10.358 18.105 7.77502 18.105 3.90302 14.232C0.031019 10.359 0.0350189 7.77606 3.90302 3.90506Z" stroke="#333333" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M13.077 8.75299H7.58603V12.971" stroke="#333333" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M12.181 7.29401L13.6231 8.73602L12.147 10.212" stroke="#333333" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                
+                 Triggers
+        </a>
+                    </ul>
+                </li>
+
+                <li class="sidebar-item">
+                    <a href="#" class="sidebar-link" 
+                         aria-expanded="false" aria-controls="multi">
+                         <i class="fa-solid fa-arrow-right-from-bracket"></i> <span style="font-weight: bold;">Log out</span>
+                    </a>
+                 </li>
+            </ul>
+       
+        </aside>
+           
+        
+            <!-- Content -->
+            <div class="content">
+                <!-- Header -->
+                <header >
+                    <nav class="breadText" style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                          <li class="breadcrumb-item">Management</li>
+                          <li class="breadcrumb-item active" aria-current="page"><a style="text-decoration: none;" href="#">My profile</a></li>
+                        </ol>
+                      </nav>      
+                      
+                      <div style="display: flex;">
+                      
+                            <div class="header-icons position-relative">
+                                
+                            <i  style="cursor: pointer;"id="notification-icon" class="fas fa-bell"></i>
+                             <span id="notification-counter" class="notification-counter">2</span>
+                      </div>
+                    </div>
+                </header>
+        
+        
+                <div style="margin: 5%; width: 100%; height: 100vh; background-color: #E5E5E5; margin-left: 2%;margin-top: 3%;"></div>
+            </div>
+        
+            <!-- Notification Panel -->
+            <div id="notification-panel">
+              </div>
+        
+            <!-- Notification Modal -->
+            <div class="modal fade" id="notificationModal" tabindex="-1" aria-labelledby="notificationModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="notificationModalLabel">Notification Title</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>Full notification message...</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+     </div>
+
+ 
+     <!-- Bootstrap and jQuery -->
+     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.min.js"></script>
+     <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Toggle Sidebar
+            const hamBurger = document.querySelector(".toggle-btn");
+            hamBurger.addEventListener("click", function () {
+                document.querySelector("#sidebar").classList.toggle("expand");
+            });
+    
+            // Initialize Notifications in Local Storage if not already set
+            function initializeNotifications() {
+                const existingNotifications = JSON.parse(localStorage.getItem('notifications'));
+                if (!existingNotifications || existingNotifications.length === 0) {
+                    // Define the default notifications
+                    const defaultNotifications = [
+                        { id: 1, title: "New Comment", timestamp: "5 minutes ago", read: false },
+                        { id: 2, title: "New Like", timestamp: "10 minutes ago", read: false },
+                        { id: 3, title: "New Follower", timestamp: "1 hour ago", read: true },
+                        { id: 4, title: "System Update", timestamp: "3 hours ago", read: true },
+                        { id: 5, title: "Weekly Report", timestamp: "Yesterday", read: true },
+                    ];
+                    // Save default notifications to local storage
+                    localStorage.setItem('notifications', JSON.stringify(defaultNotifications));
+                }
+            }
+    
+            // Initialize notifications
+            initializeNotifications();
+    
+            // Load Notifications from Local Storage
+            let notifications = JSON.parse(localStorage.getItem('notifications')) || [];
+             // Add Close Button and Notification Panel to the DOM
+            const closeButton = `<div style="display: flex;justify-content: end;"><button id="close-panel" class="btn btn-sm btn-link"><i class="fa-solid fa-xmark"></i></button></div>`;
+            $('#notification-panel').append(closeButton);
+    
+            function renderNotifications() {
+                $('#notification-panel').empty(); // Clear existing notifications
+                
+                // Add close button to the top of the panel
+                $('#notification-panel').append(closeButton);
+    
+                notifications.forEach(notification => {
+                    const notificationItem = `
+                        <div class="notification-item ${notification.read ? '' : 'unread'}" data-id="${notification.id}">
+                            <div>${notification.title}</div>
+                            <small>${notification.timestamp}</small>
+                            <button class="mark-unread-btn btn btn-sm btn-link">${notification.read ? 'Mark as Unread' : 'Mark as Read'}</button>
+                        </div>
+                    `;
+                    $('#notification-panel').append(notificationItem);
+                });
+    
+                updateNotificationCounter(); // Update counter based on current notifications
+            }
+    
+            renderNotifications(); // Initial render
+    
+            // Toggle Notification Panel
+            $('#notification-icon').on('click', function () {
+                $('#notification-panel').toggleClass('open');
+            });
+    
+            // Close Notification Panel
+            $(document).on('click', '#close-panel', function () {
+                $('#notification-panel').removeClass('open');
+            });
+    
+            // Open Notification in Modal and Mark as Read
+            $('#notification-panel').on('click', '.notification-item', function () {
+                const notificationId = $(this).data('id');
+                const notification = notifications.find(n => n.id === notificationId);
+                const notificationTitle = notification.title;
+                const notificationMessage = "This is the full message for the notification titled '" + notificationTitle + "'.";
+                const notificationTimestamp = notification.timestamp;
+    
+                $('#notificationModalLabel').text(notificationTitle);
+                $('#notificationModal .modal-body p').text(notificationMessage + "\n\nTimestamp: " + notificationTimestamp);
+                $('#notificationModal').modal('show');
+    
+                // Mark as read only if it is unread
+                if ($(this).hasClass('unread')) {
+                    $(this).removeClass('unread');
+                    notification.read = true;
+                    localStorage.setItem('notifications', JSON.stringify(notifications));
+                    updateNotificationCounter();
+                }
+            });
+    
+            // Mark as Unread Button Click
+            $('#notification-panel').on('click', '.mark-unread-btn', function (e) {
+                e.stopPropagation();
+                const notificationItem = $(this).closest('.notification-item');
+                const notificationId = notificationItem.data('id');
+                const notification = notifications.find(n => n.id === notificationId);
+    
+                if (notification.read) {
+                    notificationItem.addClass('unread');
+                    notification.read = false;
+                    localStorage.setItem('notifications', JSON.stringify(notifications));
+                    updateNotificationCounter();
+                }
+            });
+    
+            // Update Notification Counter
+            function updateNotificationCounter() {
+                const unreadCount = $('.notification-item.unread').length;
+                $('#notification-counter').text(unreadCount);
+            }
+        });
+    </script>
+        
+</body>
+
+</html>
