@@ -39,6 +39,8 @@ CSS3: For styling and layout.
 JavaScript: For dynamic interactivity and DOM manipulation.
 Bootstrap 4/5: For responsive grid structure and basic styling.
 Font Awesome: For icons used in the sidebar and notifications.
+
+
 Setup Instructions
 Clone the Repository:
 
